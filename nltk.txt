@@ -1,0 +1,45 @@
+import nltk
+from nltk.sentiment import SentimentIntensityAnalyzer
+
+# Initialize the NLTK sentiment analyzer
+sia = SentimentIntensityAnalyzer()
+
+# List of sentences to evaluate
+sentences = [
+    "I love going to the beach.",
+    "The weather is terrible today.",
+    "She is always so kind to me.",
+    "The movie was boring and dull.",
+    "I feel happy when I'm with my friends.",
+    "He is angry about the situation.",
+    "The food at the restaurant was delicious.",
+    "I'm feeling sad after hearing the news."
+]
+
+# Evaluate sentiment for each sentence
+for sentence in sentences:
+    # Get sentiment scores using SentimentIntensityAnalyzer
+    sentiment_scores = sia.polarity_scores(sentence)
+    
+    # Extract individual sentiment scores
+    compound_score = sentiment_scores['compound']
+    positive_score = sentiment_scores['pos']
+    negative_score = sentiment_scores['neg']
+    neutral_score = sentiment_scores['neu']
+    
+    # Determine sentiment label based on compound score
+    if compound_score >= 0.05:
+        sentiment_label = 'Positive'
+    elif compound_score <= -0.05:
+        sentiment_label = 'Negative'
+    else:
+        sentiment_label = 'Neutral'
+    
+    # Print the sentence, sentiment scores, and sentiment label
+    print("Sentence: ", sentence)
+    print("Compound Score: ", compound_score)
+    print("Positive Score: ", positive_score)
+    print("Negative Score: ", negative_score)
+    print("Neutral Score: ", neutral_score)
+    print("Sentiment: ", sentiment_label)
+    print("---------------")
