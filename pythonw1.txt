@@ -1,71 +1,11 @@
-Python Basics Workshop Material
-Introduction
-Python is a popular programming language used for a wide range of applications, from web development to scientific computing. In this workshop, we will cover the basics of Python programming including variables, lists, if statements, and loops.
+import re
 
-Variables
-In Python, variables are used to store values that can be used later in the program. To create a variable, you simply assign a value to a name using the "=" operator. For example:
-
-python
-Copy code
-x = 5
-This creates a variable called "x" with a value of 5. You can then use this variable in other parts of the program, for example:
-
-python
-Copy code
-y = x + 3
-This creates a new variable called "y" with a value of 8, which is the result of adding 3 to the value of "x".
-
-Lists
-Lists are used to store multiple values in a single variable. To create a list, you use square brackets and separate the values with commas. For example:
-
-python
-Copy code
-my_list = [1, 2, 3, 4, 5]
-This creates a list called "my_list" with the values 1, 2, 3, 4, and 5. You can access individual elements of the list using their index, which starts at 0. For example:
-
-python
-Copy code
-print(my_list[0]) # prints 1
-You can also modify individual elements of the list:
-
-python
-Copy code
-my_list[0] = 6
-print(my_list) # prints [6, 2, 3, 4, 5]
-If Statements
-If statements are used to make decisions in a program based on certain conditions. If the condition is true, the code inside the if statement is executed, otherwise it is skipped. For example:
-
-python
-Copy code
-x = 5
-
-if x > 0:
-    print("x is positive")
+input_text = 'IF Q8 GREATER THAN 4'
+match = re.match(r'IF (\w+) GREATER THAN (\d+)', input_text)
+if match:
+    column_name = match.group(1)
+    threshold = match.group(2)
+    output_text = f"data[data['{column_name}']>{threshold}]"
+    print(output_text)
 else:
-    print("x is not positive")
-This code checks if the value of "x" is greater than 0, and if it is, it prints "x is positive". If it is not, it prints "x is not positive".
-
-Loops
-Loops are used to repeat a block of code multiple times. There are two types of loops in Python: for loops and while loops. For loops are used to iterate over a sequence of values, such as a list, and execute the same code for each value. For example:
-
-python
-Copy code
-my_list = [1, 2, 3, 4, 5]
-
-for x in my_list:
-    print(x)
-This code prints each value in the list "my_list" on a new line.
-
-While loops are used to repeat a block of code as long as a certain condition is true. For example:
-
-python
-Copy code
-x = 0
-
-while x < 5:
-    print(x)
-    x += 1
-This code prints the values 0, 1, 2, 3, and 4 on separate lines, because the code inside the while loop is executed as long as the value of "x" is less than 5.
-
-Conclusion
-This concludes our workshop on Python basics. We have covered variables, lists, if statements, and loops, which are fundamental concepts in Python programming. With these tools, you can start building more complex programs and explore the many capabilities of Python.
+    print('Invalid input text')
