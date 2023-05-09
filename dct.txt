@@ -1,62 +1,29 @@
-Python Dictionaries Workshop Material
-Introduction
-In Python, a dictionary is a collection of key-value pairs that are unordered, changeable, and indexed. Dictionaries are used to store data in a way that is easy to access and manipulate. In this workshop, we will cover the basics of Python dictionaries and how to use them in your code.
+Find Striked Text - Docx
 
-Creating a Dictionary
-To create a dictionary in Python, you use curly braces {} and separate the keys and values with a colon :. For example:
 
-python
-Copy code
-my_dict = {"key1": "value1", "key2": "value2", "key3": "value3"}
-This creates a dictionary called "my_dict" with three key-value pairs. You can also create an empty dictionary and add items to it later:
+User
+Write a python script using docx to find striked text in a table inside a word document 
+
+ChatGPT
+Sure, here's a Python script that uses the docx library to find striked text in a table inside a Word document:
 
 python
 Copy code
-my_dict = {}
-my_dict["key1"] = "value1"
-my_dict["key2"] = "value2"
-my_dict["key3"] = "value3"
-This creates an empty dictionary called "my_dict" and adds three key-value pairs to it.
+import docx
 
-Accessing Values in a Dictionary
-To access a value in a dictionary, you use the key to look up the value. For example:
+# open the Word document
+doc = docx.Document('example.docx')
 
-python
-Copy code
-my_dict = {"key1": "value1", "key2": "value2", "key3": "value3"}
-print(my_dict["key2"]) # prints "value2"
-This code accesses the value associated with the key "key2" in the dictionary "my_dict" and prints it to the console.
-
-Updating a Dictionary
-You can update the values in a dictionary by assigning a new value to an existing key. For example:
-
-python
-Copy code
-my_dict = {"key1": "value1", "key2": "value2", "key3": "value3"}
-my_dict["key2"] = "new value"
-print(my_dict["key2"]) # prints "new value"
-This code updates the value associated with the key "key2" in the dictionary "my_dict" and prints it to the console.
-
-Removing Items from a Dictionary
-You can remove items from a dictionary using the "del" keyword. For example:
-
-python
-Copy code
-my_dict = {"key1": "value1", "key2": "value2", "key3": "value3"}
-del my_dict["key2"]
-print(my_dict) # prints {"key1": "value1", "key3": "value3"}
-This code removes the key-value pair with the key "key2" from the dictionary "my_dict" and prints the resulting dictionary to the console.
-
-Looping Through a Dictionary
-You can loop through a dictionary and perform operations on each key-value pair using a for loop. For example:
-
-python
-Copy code
-my_dict = {"key1": "value1", "key2": "value2", "key3": "value3"}
-
-for key in my_dict:
-    print(key + ": " + my_dict[key])
-This code loops through the dictionary "my_dict", prints each key-value pair on a new line in the format "key: value".
-
-Conclusion
-This concludes our workshop on Python dictionaries. We have covered how to create a dictionary, access values in a dictionary, update a dictionary, remove items from a dictionary, and loop through a dictionary. Dictionaries are a powerful data structure in Python that allow you to store and manipulate data in a flexible and efficient way.
+# iterate over all tables in the document
+for table in doc.tables:
+    # iterate over all cells in the table
+    for row in table.rows:
+        for cell in row.cells:
+            # iterate over all paragraphs in the cell
+            for paragraph in cell.paragraphs:
+                # iterate over all runs in the paragraph
+                for run in paragraph.runs:
+                    # check if the run is struck through
+                    if run.font.strike:
+                        # print the text of the run
+                        print(run.text)
