@@ -1,11 +1,6 @@
-import re
 
-input_text = 'IF Q8 GREATER THAN 4'
-match = re.match(r'IF (\w+) GREATER THAN (\d+)', input_text)
-if match:
-    column_name = match.group(1)
-    threshold = match.group(2)
-    output_text = f"data[data['{column_name}']>{threshold}]"
-    print(output_text)
-else:
-    print('Invalid input text')
+To get the last date of the month from the date '12-feb-22' using SQL, you can use the following query:
+
+sql
+Copy code
+SELECT DATEADD(DAY, -1, DATEADD(MONTH, 1, '2022-02-12')) AS LastDayOfMonth;
