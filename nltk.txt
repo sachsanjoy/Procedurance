@@ -1,109 +1,11 @@
-import nltk
-from nltk.sentiment import SentimentIntensityAnalyzer
+Certainly! Here's a simple dog figure using text characters:
 
-# Initialize the NLTK sentiment analyzer
-sia = SentimentIntensityAnalyzer()
+```
+  / \__
+ (    @\____
+ /         O
+/   (_____/
+/_____/   U
+```
 
-# List of sentences to evaluate
-sentences = [
-    "I love going to the beach.",
-    "The weather is terrible today.",
-    "She is always so kind to me.",
-    "The movie was boring and dull.",
-    "I feel happy when I'm with my friends.",
-    "He is angry about the situation.",
-    "The food at the restaurant was delicious.",
-    "I'm feeling sad after hearing the news."
-]
-
-# Evaluate sentiment for each sentence
-for sentence in sentences:
-    # Get sentiment scores using SentimentIntensityAnalyzer
-    sentiment_scores = sia.polarity_scores(sentence)
-    
-    # Extract individual sentiment scores
-    compound_score = sentiment_scores['compound']
-    positive_score = sentiment_scores['pos']
-    negative_score = sentiment_scores['neg']
-    neutral_score = sentiment_scores['neu']
-    
-    # Determine sentiment label based on compound score
-    if compound_score >= 0.05:
-        sentiment_label = 'Positive'
-    elif compound_score <= -0.05:
-        sentiment_label = 'Negative'
-    else:
-        sentiment_label = 'Neutral'
-    
-    # Print the sentence, sentiment scores, and sentiment label
-    print("Sentence: ", sentence)
-    print("Compound Score: ", compound_score)
-    print("Positive Score: ", positive_score)
-    print("Negative Score: ", negative_score)
-    print("Neutral Score: ", neutral_score)
-    print("Sentiment: ", sentiment_label)
-    print("---------------")
-
-################################################################################
-import nltk
-from nltk.tokenize import word_tokenize
-
-# Load the NLTK profanity corpus
-nltk.download('words')
-profanity_words = set(nltk.corpus.words.words('en'))
-# You can add your own list of bad words or profanity words to the profanity_words set
-
-# Text to check for profanity
-text = "I can't believe he said such offensive words. It's totally unacceptable!"
-
-# Tokenize the text into words
-words = word_tokenize(text)
-
-# Check for profanity or bad words
-profanity_detected = False
-for word in words:
-    if word.lower() in profanity_words:
-        profanity_detected = True
-        print(f"Profanity detected: {word}")
-        break
-
-if not profanity_detected:
-    print("No profanity or bad words detected.")
-##################################################################################
-
-from nltk.tokenize import word_tokenize
-
-# Function to convert a logic statement to Python logical expression
-def logic_to_python(logic_sentence):
-    # Tokenize the logic sentence into words
-    words = word_tokenize(logic_sentence)
-
-    # Map words to Python logical operators
-    word_mapping = {
-        'and': 'and',   # logical AND
-        'or': 'or',     # logical OR
-        'not': 'not',   # logical NOT
-        'implies': '->',  # logical IMPLIES
-        'if': '->',        # logical IMPLIES
-        'iff': '<->',      # logical IF AND ONLY IF
-        'equals': '==',   # logical IF AND ONLY IF
-    }
-
-    # Iterate through words and convert to Python logical operators
-    python_logical_expr = ''
-    for word in words:
-        if word in word_mapping:
-            python_logical_expr += word_mapping[word] + ' '
-        else:
-            python_logical_expr += word + ' '
-    
-    # Return the converted Python logical expression
-    return python_logical_expr
-
-# Example logic statement
-logic_statement = "If it's raining and I have an umbrella, then I'll go outside."
-
-# Convert logic statement to Python logical expression
-python_logical_expression = logic_to_python(logic_statement)
-print("Python logical expression:", python_logical_expression)
-
+I hope you like it!
