@@ -1,6 +1,23 @@
+import numpy as np
+import statsmodels.api as sm
 
-To get the last date of the month from the date '12-feb-22' using SQL, you can use the following query:
+# Generate sample data
+np.random.seed(0)
+n = 100  # number of samples
+x1a = np.random.rand(n)
+x1b = np.random.rand(n)
+x2a = np.random.rand(n)
+x2b = np.random.rand(n)
+y1 = 2 * x1a + 3 * x1b + np.random.randn(n)
+y2 = 4 * x2a - 2 * x2b + np.random.randn(n)
 
-sql
-Copy code
-SELECT DATEADD(DAY, -1, DATEADD(MONTH, 1, '2022-02-12')) AS LastDayOfMonth;
+# Create design matrix
+X = np.column_stack((x1a, x1b, x2a, x2b))
+X = sm.add_constant(X)  # add intercept term
+
+# Fit the model
+model = sm.OLS(np.column_stack((y1, y2)), X)
+results = model.fit()
+
+# Print summary
+print(results.summary())
