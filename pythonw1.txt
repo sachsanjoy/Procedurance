@@ -6,22 +6,25 @@ def compare_excel_files(file1, file2, output_file):
     wb1 = openpyxl.load_workbook(file1)
     wb2 = openpyxl.load_workbook(file2)
 
-    # Get the first sheet (assuming the first sheet to compare)
-    ws1 = wb1.active
-    ws2 = wb2.active
-
     # Define the fill for differences
     fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
 
-    # Iterate through the cells in the first sheet
-    for row in ws1.iter_rows(min_row=1, max_row=ws1.max_row, min_col=1, max_col=ws1.max_column):
-        for cell in row:
-            # Get the corresponding cell in the second sheet
-            cell2 = ws2[cell.coordinate]
+    # Iterate through all sheets in the first workbook
+    for sheet_name in wb1.sheetnames:
+        # Check if the sheet exists in the second workbook
+        if sheet_name in wb2.sheetnames:
+            ws1 = wb1[sheet_name]
+            ws2 = wb2[sheet_name]
 
-            # Compare the values
-            if cell.value != cell2.value:
-                cell2.fill = fill
+            # Iterate through the cells in the first sheet
+            for row in ws1.iter_rows(min_row=1, max_row=ws1.max_row, min_col=1, max_col=ws1.max_column):
+                for cell in row:
+                    # Get the corresponding cell in the second sheet
+                    cell2 = ws2[cell.coordinate]
+
+                    # Compare the values
+                    if cell.value != cell2.value:
+                        cell2.fill = fill
 
     # Save the changes in the second workbook
     wb2.save(output_file)
