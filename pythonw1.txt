@@ -1,23 +1,30 @@
-import numpy as np
-import statsmodels.api as sm
+import openpyxl
+from openpyxl.styles import PatternFill
 
-# Generate sample data
-np.random.seed(0)
-n = 100  # number of samples
-x1a = np.random.rand(n)
-x1b = np.random.rand(n)
-x2a = np.random.rand(n)
-x2b = np.random.rand(n)
-y1 = 2 * x1a + 3 * x1b + np.random.randn(n)
-y2 = 4 * x2a - 2 * x2b + np.random.randn(n)
+def compare_excel_files(file1, file2, output_file):
+    # Load workbooks
+    wb1 = openpyxl.load_workbook(file1)
+    wb2 = openpyxl.load_workbook(file2)
 
-# Create design matrix
-X = np.column_stack((x1a, x1b, x2a, x2b))
-X = sm.add_constant(X)  # add intercept term
+    # Get the first sheet (assuming the first sheet to compare)
+    ws1 = wb1.active
+    ws2 = wb2.active
 
-# Fit the model
-model = sm.OLS(np.column_stack((y1, y2)), X)
-results = model.fit()
+    # Define the fill for differences
+    fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
 
-# Print summary
-print(results.summary())
+    # Iterate through the cells in the first sheet
+    for row in ws1.iter_rows(min_row=1, max_row=ws1.max_row, min_col=1, max_col=ws1.max_column):
+        for cell in row:
+            # Get the corresponding cell in the second sheet
+            cell2 = ws2[cell.coordinate]
+
+            # Compare the values
+            if cell.value != cell2.value:
+                cell2.fill = fill
+
+    # Save the changes in the second workbook
+    wb2.save(output_file)
+
+# Example usage
+compare_excel_files('file1.xlsx', 'file2.xlsx', 'output.xlsx')
