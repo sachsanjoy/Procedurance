@@ -1,22 +1,47 @@
-import pandas as pd
-import io
-import ipywidgets as widgets
-from IPython.display import display
+from flask import Flask
+import dash
+from dash import dcc, html
+import plotly.graph_objs as go
 
-# Function to handle file upload
-def handle_file_upload(change):
-    uploaded_file = file_upload.value
-    content = uploaded_file['content']
-    content_str = io.StringIO(content.decode('utf-8'))
-    df = pd.read_excel(content_str)
-    print("File uploaded successfully!")
-    print(df.head())  # Display the first few rows of the DataFrame
+# Initialize Flask
+server = Flask(__name__)
 
-# Create FileUpload widget
-file_upload = widgets.FileUpload(accept='.xlsx', multiple=False)
+# Initialize Dash
+app = dash.Dash(__name__, server=server, url_base_pathname='/dashboard/')
 
-# Register the callback function to handle file upload
-file_upload.observe(handle_file_upload, names='value')
+# Sample Data
+x_data = [1, 2, 3, 4, 5]
+y_data = [10, 12, 8, 15, 10]
 
-# Display the widget
-display(file_upload)
+# Create Dash Layout
+app.layout = html.Div(children=[
+    html.H1(children='Simple Plotly Dashboard'),
+
+    dcc.Graph(
+        id='example-graph',
+        figure={
+            'data': [
+                go.Scatter(
+                    x=x_data,
+                    y=y_data,
+                    mode='lines+markers',
+                    name='Line Plot'
+                )
+            ],
+            'layout': go.Layout(
+                title='Sample Line Plot',
+                xaxis={'title': 'X-axis'},
+                yaxis={'title': 'Y-axis'},
+            )
+        }
+    )
+])
+
+# Define Flask route
+@server.route('/')
+def home():
+    return 'Hello! Go to /dashboard/ to see the Plotly Dash dashboard.'
+
+# Run the app
+if __name__ == '__main__':
+    server.run(debug=True)
