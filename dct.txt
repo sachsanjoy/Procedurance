@@ -13,21 +13,21 @@ data = {
 # Create DataFrame
 df = pd.DataFrame(data)
 
-# Initialize the correlation matrix
-corr_matrix = np.zeros((n, n))
+# Initialize the similarity matrix
+similarity_matrix = np.zeros((n, n))
 
-# Compute the correlation between each pair of data points
+# Compute the similarity (absolute differences) between each pair of data points
 for i in range(n):
     for j in range(n):
-        corr_matrix[i, j] = np.corrcoef(df['a'][i], df['b'][j])[0, 1]
+        similarity_matrix[i, j] = abs(df['a'][i] - df['b'][j])
 
-# Convert the correlation matrix to a DataFrame for plotting
-corr_df = pd.DataFrame(corr_matrix)
+# Convert the similarity matrix to a DataFrame for plotting
+similarity_df = pd.DataFrame(similarity_matrix)
 
 # Create a heatmap using seaborn
 plt.figure(figsize=(10, 8))
-sns.heatmap(corr_df, annot=False, cmap='coolwarm', vmin=-1, vmax=1)
-plt.title('Correlation Matrix between Data Points in Columns a and b')
+sns.heatmap(similarity_df, annot=False, cmap='coolwarm', vmin=0, vmax=np.max(similarity_matrix))
+plt.title('Similarity Matrix between Data Points in Columns a and b')
 plt.xlabel('b')
 plt.ylabel('a')
 plt.show()
