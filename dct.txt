@@ -1,33 +1,27 @@
-import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
-import numpy as np
+import ipywidgets as widgets
+from IPython.display import display
 
-# Generate example data
-n = 100  # number of rows
-data = {
-    'a': np.random.rand(n),
-    'b': np.random.rand(n)
-}
+# Create a text input widget
+text_input = widgets.Text(
+    value='',
+    placeholder='Type something',
+    description='Input:',
+    disabled=False
+)
 
-# Create DataFrame
-df = pd.DataFrame(data)
+# Create a checkbox widget
+checkbox = widgets.Checkbox(
+    value=False,
+    description='Deactivate Input',
+    disabled=False
+)
 
-# Initialize the similarity matrix
-similarity_matrix = np.zeros((n, n))
+# Define a function to handle the checkbox state change
+def on_checkbox_change(change):
+    text_input.disabled = change['new']
 
-# Compute the similarity (absolute differences) between each pair of data points
-for i in range(n):
-    for j in range(n):
-        similarity_matrix[i, j] = abs(df['a'][i] - df['b'][j])
+# Attach the function to the checkbox state change event
+checkbox.observe(on_checkbox_change, names='value')
 
-# Convert the similarity matrix to a DataFrame for plotting
-similarity_df = pd.DataFrame(similarity_matrix)
-
-# Create a heatmap using seaborn
-plt.figure(figsize=(10, 8))
-sns.heatmap(similarity_df, annot=False, cmap='coolwarm', vmin=0, vmax=np.max(similarity_matrix))
-plt.title('Similarity Matrix between Data Points in Columns a and b')
-plt.xlabel('b')
-plt.ylabel('a')
-plt.show()
+# Display the widgets
+display(text_input, checkbox)
