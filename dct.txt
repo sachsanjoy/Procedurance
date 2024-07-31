@@ -1,27 +1,12 @@
-import ipywidgets as widgets
-from IPython.display import display
+# Define the two lists
+A = [1, 2, 3, 4, 5]
+B = [4, 5, 6, 7, 8]
 
-# Create a text input widget
-text_input = widgets.Text(
-    value='',
-    placeholder='Type something',
-    description='Input:',
-    disabled=False
-)
+# Find elements in B that are missing in A
+missing_in_A = [item for item in B if item not in A]
 
-# Create a checkbox widget
-checkbox = widgets.Checkbox(
-    value=False,
-    description='Deactivate Input',
-    disabled=False
-)
+# Find elements in A that are missing in B
+missing_in_B = [item for item in A if item not in B]
 
-# Define a function to handle the checkbox state change
-def on_checkbox_change(change):
-    text_input.disabled = change['new']
-
-# Attach the function to the checkbox state change event
-checkbox.observe(on_checkbox_change, names='value')
-
-# Display the widgets
-display(text_input, checkbox)
+print(f"Elements missing in A compared to B: {missing_in_A}")
+print(f"Elements missing in B compared to A: {missing_in_B}")
