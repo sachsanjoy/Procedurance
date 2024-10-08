@@ -1,23 +1,144 @@
-import os
-import fnmatch
+To use a Bayesian or Entropy-based method for time series forecasting and adjustment during the pandemic period, we’ll focus on the Bayesian approach, as it is commonly used for probabilistic time series modeling.
 
-def find_ipr_msg_files(directory):
-    # List to store the found files
-    ipr_msg_files = []
+A good Bayesian model for time series data is Bayesian Structural Time Series (BSTS), which can incorporate external events (like the pandemic) as part of the model. However, bsts is typically more developed in R. In Python, we can use PyMC3 or TensorFlow Probability to create a Bayesian time series model.
+
+Here, I'll use PyMC3 to model a time series with a Bayesian approach, incorporating a "pandemic effect" as a regression component. This script simulates a time series, adjusts for the pandemic, and forecasts it using Bayesian modeling.
+
+PyMC3 Bayesian Time Series Forecast Script:
+
+1. Import necessary libraries.
+
+
+2. Create a time series dataset (or load an existing one).
+
+
+3. Use PyMC3 to build a Bayesian time series model with a pandemic effect.
+
+
+4. Estimate parameters via Markov Chain Monte Carlo (MCMC).
+
+
+5. Plot results and forecast with uncertainty bounds.
+
+
+
+# Step 1: Import necessary libraries
+import pandas as pd
+import numpy as np
+import pymc3 as pm
+import matplotlib.pyplot as plt
+import seaborn as sns
+from theano import shared
+
+# Step 2: Create a sample time series data with a "pandemic" effect
+np.random.seed(42)
+dates = pd.date_range(start="2015-01-01", end="2023-12-31", freq='M')
+n = len(dates)
+pandemic_start = pd.Timestamp('2020-03-01')
+pandemic_end = pd.Timestamp('2022-12-31')
+
+# Simulate normal time series with linear trend and seasonality
+trend = np.linspace(100, 200, n)
+seasonality = 10 * np.sin(np.linspace(0, 3 * np.pi, n))  # seasonal component
+noise = np.random.normal(0, 2, n)
+
+# Add "pandemic" effect (a drop or increase in values during 2020-2022)
+pandemic_effect = np.where((dates >= pandemic_start) & (dates <= pandemic_end), -10, 0)
+
+# Combine all components to create time series data
+y = trend + seasonality + noise + pandemic_effect
+
+# Step 3: Prepare the data for PyMC3
+data = pd.DataFrame({'ds': dates, 'y': y})
+
+# Step 4: Build a Bayesian Time Series model using PyMC3
+with pm.Model() as model:
+    # Define priors
+    sigma = pm.HalfNormal('sigma', 5)
     
-    # Traverse the directory tree
-    for root, dirs, files in os.walk(directory):
-        # Filter files that start with "IPR" and end with ".msg"
-        for file in fnmatch.filter(files, 'IPR*.msg'):
-            # Add the full path to the result list
-            ipr_msg_files.append(os.path.join(root, file))
+    # Linear trend component
+    beta = pm.Normal('beta', 0, sigma=10)
+    alpha = pm.Normal('alpha', 100, sigma=10)
+    trend = alpha + beta * np.arange(n)
     
-    return ipr_msg_files
+    # Seasonality component (Sinusoidal)
+    amplitude = pm.Normal('amplitude', 10, sigma=5)
+    period = pm.Normal('period', 12, sigma=2)
+    seasonality = amplitude * pm.math.sin((2 * np.pi * np.arange(n)) / period)
+    
+    # Pandemic effect (a discrete intervention variable)
+    pandemic = shared(np.where((dates >= pandemic_start) & (dates <= pandemic_end), 1, 0))
+    pandemic_effect = pm.Normal('pandemic_effect', -10, sigma=5)
+    pandemic_contrib = pandemic_effect * pandemic
+    
+    # Observed data (combining all components)
+    mu = trend + seasonality + pandemic_contrib
+    y_obs = pm.Normal('y_obs', mu=mu, sigma=sigma, observed=y)
+    
+    # Step 5: Inference using MCMC sampling
+    trace = pm.sample(2000, tune=1000, target_accept=0.95)
 
-# Example usage
-directory_path = '/path/to/directory'
-result = find_ipr_msg_files(directory_path)
+# Step 6: Plot posterior distributions
+pm.plot_posterior(trace, var_names=['beta', 'alpha', 'amplitude', 'pandemic_effect'], credible_interval=0.95)
+plt.show()
 
-# Print the list of found files
-for file_path in result:
-    print(file_path)
+# Step 7: Plot the fitted model vs actual data
+plt.figure(figsize=(10, 6))
+plt.plot(dates, y, label="Observed", color="black")
+plt.plot(dates, trace['alpha'].mean() + trace['beta'].mean() * np.arange(n) + 
+         trace['amplitude'].mean() * np.sin((2 * np.pi * np.arange(n)) / trace['period'].mean()) + 
+         trace['pandemic_effect'].mean() * pandemic.get_value(), 
+         label="Fitted", color="red")
+plt.fill_between(dates, 
+                 trace['alpha'].mean() + trace['beta'].mean() * np.arange(n) + 
+                 trace['amplitude'].mean() * np.sin((2 * np.pi * np.arange(n)) / trace['period'].mean()) - 1.96 * trace['sigma'].mean(), 
+                 trace['alpha'].mean() + trace['beta'].mean() * np.arange(n) + 
+                 trace['amplitude'].mean() * np.sin((2 * np.pi * np.arange(n)) / trace['period'].mean()) + 1.96 * trace['sigma'].mean(), 
+                 color="red", alpha=0.3)
+plt.axvspan(pandemic_start, pandemic_end, color="gray", alpha=0.2, label="Pandemic Period")
+plt.legend()
+plt.title("Bayesian Time Series Model with Pandemic Adjustment")
+plt.xlabel("Date")
+plt.ylabel("Value")
+plt.show()
+
+# Step 8: Forecast future values
+# Forecast next 12 months after 2023
+future_dates = pd.date_range(start="2024-01-01", end="2024-12-31", freq='M')
+future_n = len(future_dates)
+future_x = np.arange(n, n + future_n)
+
+# Predicting based on the posterior distribution
+future_trend = trace['alpha'].mean() + trace['beta'].mean() * future_x
+future_seasonality = trace['amplitude'].mean() * np.sin((2 * np.pi * future_x) / trace['period'].mean())
+
+# Pandemic effect ends after 2022
+future_pandemic_contrib = 0  # No pandemic effect after 2022
+
+# Final forecast
+future_forecast = future_trend + future_seasonality + future_pandemic_contrib
+
+# Step 9: Plot forecast
+plt.figure(figsize=(10, 6))
+plt.plot(dates, y, label="Observed", color="black")
+plt.plot(future_dates, future_forecast, label="Forecast", color="blue")
+plt.title("Forecast after Pandemic Adjustment")
+plt.xlabel("Date")
+plt.ylabel("Value")
+plt.legend()
+plt.show()
+
+Explanation:
+
+1. Dataset: A time series is simulated with a trend, seasonality, and noise. A pandemic effect is applied from 2020-03 to 2022-12.
+
+
+2. Bayesian Model:
+
+The model includes priors for the trend (alpha, beta), seasonality (amplitude, period), and the pandemic effect.
+
+pandemic_effect: Models the pandemic
+
+
+
+
