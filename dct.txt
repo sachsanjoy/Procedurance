@@ -1,16 +1,16 @@
 import pandas as pd
 from statsmodels.tsa.statespace.sarimax import SARIMAX
-from statsmodels.tsa.stattools import adfuller
 import numpy as np
 
-def sarima_forecast(df, date_col, target_col, order, seasonal_order):
+def sarimax_forecast(df, date_col, target_col, exog_cols, order, seasonal_order):
     """
-    Fit a SARIMA model on the time series data and forecast the next date.
+    Fit a SARIMAX model on the time series data with exogenous variables and forecast the next date.
 
     Parameters:
-    df (pd.DataFrame): The time series data containing a date column and target column.
+    df (pd.DataFrame): The time series data containing a date column, target column, and exogenous variables.
     date_col (str): The name of the date column in the dataframe.
     target_col (str): The name of the target (dependent) variable in the dataframe.
+    exog_cols (list): The list of exogenous (independent) variable column names.
     order (tuple): The (p,d,q) order of the SARIMA model.
     seasonal_order (tuple): The seasonal (P,D,Q,s) order of the SARIMA model.
 
@@ -18,24 +18,21 @@ def sarima_forecast(df, date_col, target_col, order, seasonal_order):
     pd.DataFrame: The original dataframe with a forecast of the next date.
     float: The forecasted value for the next date.
     """
-    # Ensure the date column is in datetime format
+    # Ensure the date column is in datetime format and set it as the index
     df[date_col] = pd.to_datetime(df[date_col])
     df.set_index(date_col, inplace=True)
 
-    # Check if the target column is stationary, if not, difference the data
-    adf_result = adfuller(df[target_col])
-    print(f'ADF Statistic: {adf_result[0]}')
-    print(f'p-value: {adf_result[1]}')
+    # Separate the dependent variable (target) and exogenous variables (independent variables)
+    y = df[target_col]  # Dependent variable (target)
+    exog = df[exog_cols]  # Exogenous variables (independent variables)
 
-    if adf_result[1] > 0.05:
-        print("The time series is not stationary, differencing might be required.")
-    
-    # Fit the SARIMA model
-    model = SARIMAX(df[target_col], order=order, seasonal_order=seasonal_order, enforce_stationarity=False, enforce_invertibility=False)
-    sarima_model = model.fit(disp=False)
+    # Fit the SARIMAX model with exogenous variables
+    model = SARIMAX(y, exog=exog, order=order, seasonal_order=seasonal_order, enforce_stationarity=False, enforce_invertibility=False)
+    sarimax_model = model.fit(disp=False)
 
     # Forecasting the next time step (out-of-sample)
-    forecast = sarima_model.get_forecast(steps=1)
+    exog_forecast = exog.iloc[-1].values.reshape(1, -1)  # Use the latest exog values for the next step
+    forecast = sarimax_model.get_forecast(steps=1, exog=exog_forecast)
     forecast_value = forecast.predicted_mean[0]
     conf_int = forecast.conf_int()
 
@@ -57,10 +54,13 @@ def sarima_forecast(df, date_col, target_col, order, seasonal_order):
 
 
 
+
 # Sample data
 data = {
     'Date': pd.date_range(start='2020-01-01', periods=100, freq='D'),
-    'Value': np.random.rand(100) * 100
+    'Value': np.random.rand(100) * 100,          # Dependent variable
+    'Exog1': np.random.rand(100) * 50,           # Independent variable 1
+    'Exog2': np.random.rand(100) * 10            # Independent variable 2
 }
 
 df = pd.DataFrame(data)
@@ -70,6 +70,6 @@ order = (1, 1, 1)
 seasonal_order = (1, 1, 1, 12)
 
 # Forecast next point
-df_forecasted, forecast_value = sarima_forecast(df, 'Date', 'Value', order, seasonal_order)
+df_forecasted, forecast_value = sarimax_forecast(df, 'Date', 'Value', ['Exog1', 'Exog2'], order, seasonal_order)
 
 print(f"Next predicted value: {forecast_value}")
