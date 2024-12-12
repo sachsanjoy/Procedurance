@@ -1,75 +1,74 @@
 import pandas as pd
-from statsmodels.tsa.statespace.sarimax import SARIMAX
-import numpy as np
+import xlsxwriter
+import random
+import string
 
-def sarimax_forecast(df, date_col, target_col, exog_cols, order, seasonal_order):
-    """
-    Fit a SARIMAX model on the time series data with exogenous variables and forecast the next date.
+def generate_dummy_data(output_csv):
+    # Generate 100 rows of dummy data
+    data = {
+        "Year": [random.choice(range(2010, 2023)) for _ in range(100)],
+        "Breakdown_category": [random.choice(["Agriculture", "Manufacturing", "Healthcare", "Technology", "Education"]) for _ in range(100)],
+        "RD_Value": [random.uniform(50, 500) for _ in range(100)],
+        "Status": [random.choice(["Active", "Inactive"]) for _ in range(100)],
+        "Unit": [random.choice(["NZD", "USD", "EUR"]) for _ in range(100)]
+    }
+    
+    # Create a DataFrame and save to CSV
+    df = pd.DataFrame(data)
+    df.to_csv(output_csv, index=False)
+    print(f"Dummy data saved to '{output_csv}'.")
 
-    Parameters:
-    df (pd.DataFrame): The time series data containing a date column, target column, and exogenous variables.
-    date_col (str): The name of the date column in the dataframe.
-    target_col (str): The name of the target (dependent) variable in the dataframe.
-    exog_cols (list): The list of exogenous (independent) variable column names.
-    order (tuple): The (p,d,q) order of the SARIMA model.
-    seasonal_order (tuple): The seasonal (P,D,Q,s) order of the SARIMA model.
+def create_excel_with_charts(input_csv, output_excel):
+    # Load the data
+    data = pd.read_csv(input_csv, encoding='ISO-8859-1')
 
-    Returns:
-    pd.DataFrame: The original dataframe with a forecast of the next date.
-    float: The forecasted value for the next date.
-    """
-    # Ensure the date column is in datetime format and set it as the index
-    df[date_col] = pd.to_datetime(df[date_col])
-    df.set_index(date_col, inplace=True)
+    # Initialize the workbook
+    workbook = xlsxwriter.Workbook(output_excel)
 
-    # Separate the dependent variable (target) and exogenous variables (independent variables)
-    y = df[target_col]  # Dependent variable (target)
-    exog = df[exog_cols]  # Exogenous variables (independent variables)
+    # Define summaries for pivot-like data
+    summaries = [
+        ("Total RD Expenditure by Year", data.groupby("Year")["RD_Value"].sum().reset_index()),
+        ("Total RD Expenditure by Category", data.groupby("Breakdown_category")["RD_Value"].sum().reset_index()),
+        ("Average RD Value by Year and Category", data.groupby(["Year", "Breakdown_category"])["RD_Value"].mean().reset_index()),
+    ]
 
-    # Fit the SARIMAX model with exogenous variables
-    model = SARIMAX(y, exog=exog, order=order, seasonal_order=seasonal_order, enforce_stationarity=False, enforce_invertibility=False)
-    sarimax_model = model.fit(disp=False)
+    for sheet_name, summary_data in summaries:
+        # Add a worksheet
+        worksheet = workbook.add_worksheet(sheet_name[:31])  # Limit sheet name to 31 characters
 
-    # Forecasting the next time step (out-of-sample)
-    exog_forecast = exog.iloc[-1].values.reshape(1, -1)  # Use the latest exog values for the next step
-    forecast = sarimax_model.get_forecast(steps=1, exog=exog_forecast)
-    forecast_value = forecast.predicted_mean[0]
-    conf_int = forecast.conf_int()
+        # Write the data headers
+        for col_num, column_title in enumerate(summary_data.columns):
+            worksheet.write(0, col_num, column_title)
 
-    # Print forecast and confidence interval
-    print(f'Forecasted Value: {forecast_value}')
-    print(f'Confidence Interval: \n{conf_int}')
+        # Write the data rows
+        for row_num, row in enumerate(summary_data.itertuples(index=False), start=1):
+            worksheet.write_row(row_num, 0, row)
 
-    # Create a new row with the forecasted value
-    last_date = df.index[-1]
-    next_date = last_date + pd.DateOffset(1)  # Assuming daily frequency
+        # Create a chart
+        chart = workbook.add_chart({'type': 'column'})
+        chart.set_title({'name': sheet_name})
 
-    # Append the forecast to the dataframe
-    df_forecasted = df.copy()
-    df_forecasted.loc[next_date] = np.nan
-    df_forecasted[target_col].iloc[-1] = forecast_value  # Fill the forecasted value
+        # Configure the chart
+        chart.add_series({
+            'name':       summary_data.columns[1],
+            'categories': [sheet_name[:31], 1, 0, len(summary_data), 0],
+            'values':     [sheet_name[:31], 1, 1, len(summary_data), 1],
+        })
 
-    return df_forecasted, forecast_value
+        # Insert the chart into the worksheet
+        worksheet.insert_chart("E2", chart)
 
+    # Close the workbook
+    workbook.close()
 
+# File paths
+output_csv = 'dummy_data.csv'
+input_csv = output_csv
+output_excel = 'rd_analysis.xlsx'
 
+# Generate dummy data
+generate_dummy_data(output_csv)
 
-
-# Sample data
-data = {
-    'Date': pd.date_range(start='2020-01-01', periods=100, freq='D'),
-    'Value': np.random.rand(100) * 100,          # Dependent variable
-    'Exog1': np.random.rand(100) * 50,           # Independent variable 1
-    'Exog2': np.random.rand(100) * 10            # Independent variable 2
-}
-
-df = pd.DataFrame(data)
-
-# Model parameters (example: SARIMA(1,1,1)(1,1,1,12))
-order = (1, 1, 1)
-seasonal_order = (1, 1, 1, 12)
-
-# Forecast next point
-df_forecasted, forecast_value = sarimax_forecast(df, 'Date', 'Value', ['Exog1', 'Exog2'], order, seasonal_order)
-
-print(f"Next predicted value: {forecast_value}")
+# Generate the Excel file
+create_excel_with_charts(input_csv, output_excel)
+print(f"Excel file '{output_excel}' created successfully.")
