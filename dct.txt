@@ -14,11 +14,13 @@ print(agg_data)
 # Create separate figures for each panel
 # Panel 0
 fig_panel_0 = make_subplots(rows=1, cols=2, column_widths=[0.7, 0.3],
-                            subplot_titles=("Line Plot - Panel 1", "Bar Plot - Panel 1"))
-
+                            specs=[[{"type": "xy"}, {"type": "pie"} ]],
+                            subplot_titles=("Line Plot - Panel 0", "Pie Plot - Panel 0"))
 
 for cols in data.columns[1:-1]:
     fig_panel_0.add_trace(go.Scatter(x=data['DATE'], y=data[f'{cols}'], mode='markers'), row=1, col=1)
+
+fig_panel_0.add_trace(go.Pie(labels=agg_data['COL_E'], values=agg_data['COL_A']), row=1, col=2)
 
 
 # Panel 1
@@ -44,6 +46,7 @@ fig_panel_4 = make_subplots(rows=1, cols=2, column_widths=[0.7, 0.3],
                             subplot_titles=("Line Plot - Panel 3", "Bar Plot - Panel 3"))
 fig_panel_4.add_trace(go.Scatter(x=data['DATE'], y=data['COL_D'], mode='lines', name='COL_D'), row=1, col=1)
 fig_panel_4.add_trace(go.Bar(x=agg_data['COL_E'], y=agg_data['COL_D'], name='COL_D'), row=1, col=2)
+
 
 # Adding range sliders for all line plots
 for fig in [fig_panel_0, fig_panel_1, fig_panel_2, fig_panel_3, fig_panel_4]:
