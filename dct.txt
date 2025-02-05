@@ -1,1 +1,24 @@
-https://docs.google.com/spreadsheets/d/1PIL9UndlHFnXG8t-lhSizHtswHfbderR/edit?usp=drivesdk&ouid=100861826651691705839&rtpof=true&sd=true
+import pandas as pd
+
+# Define file paths
+excel_file = "data.xlsx"  # Your existing Excel file
+csv_files = {
+    "Sheet1": "data1.csv",
+    "Sheet2": "data2.csv",
+    "Sheet3": "data3.csv"
+}  # Dictionary mapping sheet names to CSV file paths
+output_file = "updated_data.xlsx"  # Output file after modification
+
+# Read the entire Excel file
+sheets = pd.read_excel(excel_file, sheet_name=None)  # Read all sheets into a dictionary
+
+# Read CSV files and update specific sheets
+for sheet_name, csv_file in csv_files.items():
+    sheets[sheet_name] = pd.read_csv(csv_file)  # Replace sheet data with CSV data
+
+# Write back to a new Excel file
+with pd.ExcelWriter(output_file, engine="openpyxl") as writer:
+    for sheet, df in sheets.items():
+        df.to_excel(writer, sheet_name=sheet, index=False)
+
+print("Excel file updated successfully!")
