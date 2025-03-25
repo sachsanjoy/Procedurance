@@ -1,24 +1,23 @@
 import pandas as pd
 
-# Define file paths
-excel_file = "data.xlsx"  # Your existing Excel file
-csv_files = {
-    "Sheet1": "data1.csv",
-    "Sheet2": "data2.csv",
-    "Sheet3": "data3.csv"
-}  # Dictionary mapping sheet names to CSV file paths
-output_file = "updated_data.xlsx"  # Output file after modification
+# Sample Data
+data = {'date': ['2024-01-20', '2024-01-25', '2024-01-27',
+                 '2024-02-24', '2024-02-26',
+                 '2024-03-23', '2024-03-28'],
+        'metricvalue': [100, 200, 300, 150, 250, 180, 280]}
 
-# Read the entire Excel file
-sheets = pd.read_excel(excel_file, sheet_name=None)  # Read all sheets into a dictionary
+# Create DataFrame
+df = pd.DataFrame(data)
 
-# Read CSV files and update specific sheets
-for sheet_name, csv_file in csv_files.items():
-    sheets[sheet_name] = pd.read_csv(csv_file)  # Replace sheet data with CSV data
+# Convert date column to datetime
+df['date'] = pd.to_datetime(df['date'])
 
-# Write back to a new Excel file
-with pd.ExcelWriter(output_file, engine="openpyxl") as writer:
-    for sheet, df in sheets.items():
-        df.to_excel(writer, sheet_name=sheet, index=False)
+# Function to get closest date ≤ 25th for each month
+def closest_date(group):
+    return group[group['date'] <= group['date'].dt.to_period('M').dt.to_timestamp() + pd.DateOffset(days=24)].max()
 
-print("Excel file updated successfully!")
+# Apply filtering per year-month group
+filtered_df = df.groupby(df['date'].dt.to_period('M')).apply(closest_date).reset_index(drop=True)
+
+# Display result
+print(filtered_df)
